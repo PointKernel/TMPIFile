@@ -25,7 +25,7 @@ const Int_t MIN_FILE_NUM = 2;
 TMPIFile::TMPIFile(const char *name, char *buffer, Long64_t size,
                    Option_t *option, Int_t split, const char *ftitle,
                    Int_t compress)
-    : TMemFile(name, buffer, size, option, ftitle, compress), fSplitLevel(split), fMPIColor(0), fRequest(0), fSendBuf(0)
+    : TMemFile(name, buffer, size, option, ftitle, compress), fSplitLevel(split), fMPIColor(0), fMPIRequest(0), fSendBuf(0)
 {
   CheckSplitLevel();
   SplitMPIComm();
@@ -33,7 +33,7 @@ TMPIFile::TMPIFile(const char *name, char *buffer, Long64_t size,
 
 TMPIFile::TMPIFile(const char *name, Option_t *option, Int_t split,
                    const char *ftitle, Int_t compress)
-    : TMemFile(name, option, ftitle, compress), fSplitLevel(split), fMPIColor(0), fRequest(0), fSendBuf(0)
+    : TMemFile(name, option, ftitle, compress), fSplitLevel(split), fMPIColor(0), fMPIRequest(0), fSendBuf(0)
 {
   CheckSplitLevel();
   SplitMPIComm();
@@ -380,7 +380,7 @@ void TMPIFile::CreateBufferAndSend() {
   Int_t count = this->GetEND();
   fSendBuf = new char[count];
   this->CopyTo(fSendBuf, count);
-  MPI_Isend(fSendBuf, count, MPI_CHAR, 0, fMPIColor, sub_comm, &fRequest);
+  MPI_Isend(fSendBuf, count, MPI_CHAR, 0, fMPIColor, sub_comm, &fMPIRequest);
 }
 
 void TMPIFile::CreateEmptyBufferAndSend() {
@@ -390,7 +390,7 @@ void TMPIFile::CreateEmptyBufferAndSend() {
 
   if (!IsReceived()) {
     auto start = std::chrono::high_resolution_clock::now();
-    MPI_Wait(&fRequest, MPI_STATUS_IGNORE);
+    MPI_Wait(&fMPIRequest, MPI_STATUS_IGNORE);
     auto end = std::chrono::high_resolution_clock::now();
     double time = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
     std::cout << "[" << fMPIColor << "]"
@@ -412,7 +412,7 @@ void TMPIFile::Sync() {
   } else {
     // if not accepted wait until received by master
     auto start = std::chrono::high_resolution_clock::now();
-    MPI_Wait(&fRequest, MPI_STATUS_IGNORE);
+    MPI_Wait(&fMPIRequest, MPI_STATUS_IGNORE);
     auto end = std::chrono::high_resolution_clock::now();
     double time = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
     std::cout << "[" << fMPIColor << "]"
@@ -480,12 +480,11 @@ void TMPIFile::SplitMPIComm() {
 }
 
 Bool_t TMPIFile::IsReceived() {
-  if (!fRequest) {
+  if (!fMPIRequest) {
     return kTRUE;  
   }
   Int_t flag = 0;
-  MPI_Status status;
-  MPI_Test(&fRequest, &flag, &status);
+  MPI_Test(&fMPIRequest, &flag, MPI_STATUS_IGNORE);
   return flag;
 }
 

@@ -35,7 +35,7 @@ private:
   Int_t fMPILocalSize;
 
   MPI_Comm sub_comm;
-  MPI_Request fRequest;
+  MPI_Request fMPIRequest;
 
   TString fMPIFilename;
 
