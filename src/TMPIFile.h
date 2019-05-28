@@ -35,7 +35,7 @@ private:
   Int_t fMPILocalSize;
 
   MPI_Comm sub_comm;
-  MPI_Request fRequest = 0;
+  MPI_Request fRequest;
 
   TString fMPIFilename;
 
@@ -72,6 +72,8 @@ private:
   void CheckSplitLevel();
   void SplitMPIComm();
   void UpdateEndProcess(); // update how many workers reached end of job
+
+  Bool_t IsReceived();
 
 public:
   TMPIFile(const char *name, char *buffer, Long64_t size = 0, Option_t *option = "", Int_t split = 1, const char *ftitle = "", Int_t compress = 4);

@@ -388,7 +388,7 @@ void TMPIFile::CreateEmptyBufferAndSend() {
     return;
   }
 
-  if (fRequest) {
+  if (!IsReceived()) {
     auto start = std::chrono::high_resolution_clock::now();
     MPI_Wait(&fRequest, MPI_STATUS_IGNORE);
     auto end = std::chrono::high_resolution_clock::now();
@@ -396,7 +396,6 @@ void TMPIFile::CreateEmptyBufferAndSend() {
     std::cout << "[" << fMPIColor << "]"
               << "[" << fMPILocalRank << "] wait time: "
               << time << std::endl;
-    fRequest = 0;
     delete [] fSendBuf;
   }
   Int_t sent = MPI_Send(fSendBuf, 0, MPI_CHAR, 0, fMPIColor, sub_comm);
@@ -408,7 +407,7 @@ void TMPIFile::CreateEmptyBufferAndSend() {
 // Synching defines the communication method between worker/collector
 void TMPIFile::Sync() {
   // check if the previous send request is accepted by master.
-  if (!fRequest) { // if accpeted create and send current batch
+  if (IsReceived()) { // if accpeted create and send current batch
     CreateBufferAndSend();
   } else {
     // if not accepted wait until received by master
@@ -420,8 +419,6 @@ void TMPIFile::Sync() {
               << "[" << fMPILocalRank << "] wait time: "
               << time << std::endl;
     delete[] fSendBuf; // empty the buffer once received by master
-    // Reset the frequest once accepted by master and send new buffer
-    fRequest = 0;
     CreateBufferAndSend();
   }
   this->ResetAfterMerge((TFileMergeInfo *)0);
@@ -480,6 +477,16 @@ void TMPIFile::SplitMPIComm() {
   }
   MPI_Comm_size(sub_comm, &fMPILocalSize);
   MPI_Comm_rank(sub_comm, &fMPILocalRank);
+}
+
+Bool_t TMPIFile::IsReceived() {
+  if (!fRequest) {
+    return kTRUE;  
+  }
+  Int_t flag = 0;
+  MPI_Status status;
+  MPI_Test(&fRequest, &flag, &status);
+  return flag;
 }
 
 Int_t TMPIFile::GetMPIGlobalSize() const
