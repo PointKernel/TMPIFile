@@ -4,7 +4,7 @@ project(TMPI CXX)
 #Bring the header directory into the project
 include_directories(
         .
-        ${MPI_INCLUDE_PATH}
+        ${MPI_CXX_INCLUDE_DIRS}
         ${ROOT_INCLUDE_DIR}
 )
 
@@ -12,7 +12,6 @@ set( ${PROJECT_NAME}_HEADERS
         TClientInfo.h
         JetEvent.h
         TMPIFile.h
-	cxxopts.hpp
 )
 
 set( ${PROJECT_NAME}_SRCS
@@ -24,7 +23,7 @@ set( ${PROJECT_NAME}_SRCS
 ROOT_GENERATE_DICTIONARY( TMPIDict ${${PROJECT_NAME}_HEADERS} LINKDEF Linkdef.h )
 set( ${PROJECT_NAME}_DICTIONARIES TMPIDict.cxx)
 add_library( ${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_DICTIONARIES} )
-target_link_libraries( ${PROJECT_NAME} ${ROOT_LIBRARIES} )
+target_link_libraries( ${PROJECT_NAME} ${ROOT_LIBRARIES} ${MPI_CXX_LIBRARIES} )
 
 #install target
 install(

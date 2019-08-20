@@ -44,7 +44,7 @@ the remaining ranks to distribute the workers among collectors.
 
 --------------------------------------------------------------------------- */
 
-void test_tmpi(int argc, char *argv[]) {
+void test_tmpi() {
   
    Int_t N_collectors    = 2;     // specify how many collectors to run
    Int_t sync_rate       = 2;    // workers sync every sync_rate events
@@ -198,14 +198,10 @@ void test_tmpi(int argc, char *argv[]) {
 }
 
 #ifndef __CINT__
-int main(int argc, char *argv[]) {
+int main() {
    auto start = std::chrono::high_resolution_clock::now();
 
-   // int rank, size;
-   // MPI_Init(&argc, &argv);
-   // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-   // MPI_Comm_size(MPI_COMM_WORLD, &size);
-   test_tmpi(argc, argv);
+   test_tmpi();
 
    auto end = std::chrono::high_resolution_clock::now();
    double time =
@@ -213,16 +209,9 @@ int main(int argc, char *argv[]) {
           .count();
    std::string msg = "Total elapsed time: ";
    msg += std::to_string(time);
-   // msg += "\tTotal rank: ";
-   // msg += std::to_string(size);
-   // msg += "\t rank: ";
-   // msg += std::to_string(rank);
-   //if (rank == 0)
    Info("test_tmpi", msg.c_str());
 
-   // MPI_Finalize();
    msg = "exiting ";
-   // msg += std::to_string(rank);
    Info("test_tmpi",msg.c_str());
 
    return 0;

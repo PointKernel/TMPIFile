@@ -128,7 +128,7 @@ public:
    void Sync();
 
    // Finalize work and save output in disk.
-   void Close(Bool_t MPIFinalize=true,Option_t *option="");
+   void Close(Option_t *option="") final;
 
    ClassDef(TMPIFile, 0)
 };

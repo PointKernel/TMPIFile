@@ -6,9 +6,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # MPI
 find_package(MPI REQUIRED)
-if( NOT DEFINED MPI_INCLUDE_PATH )
-    set( MPI_INCLUDE_PATH "$ENV{MPICH_DIR}/include" )
-endif()
 # ROOT
 find_package(ROOT REQUIRED)
 

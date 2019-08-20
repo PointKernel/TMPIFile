@@ -501,23 +501,19 @@ void TMPIFile::Sync()
 /// Closes the file. For Worker ranks, this function will signal to the
 /// Collector that the Worker has exited. It also closes the inherited TMemFile.
 
-void TMPIFile::Close(Bool_t MPIFinalize, Option_t *option)
+void TMPIFile::Close(Option_t *option)
 {
    // sends empty buffer 
    CreateEmptyBufferAndSend();
    // call parent close function
    TMemFile::Close(option);
 
-   // if MPIFinalize is true
-   if(MPIFinalize){
-      // check to see that MPI has not already been finalized
-      Int_t finalized = 0;
-      MPI_Finalized(&finalized);
-      if (not finalized) {
-         // MPI_Barrier(MPI_COMM_WORLD);
-         MPI_Finalize();
-      }
-   }
+  // check to see that MPI has not already been finalized
+  Int_t finalized = 0;
+  MPI_Finalized(&finalized);
+  if (!finalized) {
+     MPI_Finalize();
+  }
 }
 
 
